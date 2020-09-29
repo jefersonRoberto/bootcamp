@@ -1,13 +1,9 @@
-
-
-
 <div class="page-width">
   <div class="grid">
     <div class="grid__item medium-up--five-sixths medium-up--push-one-twelfth">
       <div class="section-header text-center">
         <h1>{{ page.title }}</h1>
       </div>
-
 
       <div class="style-guide">
       
@@ -50,10 +46,97 @@
 
         <hr>
 
-         {% include 'icon-cart' %}
+  
+     
+        {% include 'icon-search' %}
+        {% include 'icon-plus' %}
+        {% include 'icon-minus' %}
+        {% include 'icon-youtube' %}
+        {% include 'icon-twitter' %}
+        {% include 'icon-instagram' %}
+        {% include 'icon-facebook' %}
+       
 
-        <button class="btn">Buttom Test</button>
+        <div style="background: black; padding: 10px;margin-top:24px">
+          {% include 'icon-twitter', type: 'white' %}
+          {% include 'icon-instagram', type: 'white' %}
+          {% include 'icon-facebook', type: 'white' %}
+          {% include 'icon-youtube', type: 'white' %}
+        </div>
+
+        <hr>
+
+       
+        <button class="btn">Button test</button>
+        <button class="btn btn-pink">Button test</button>
+
         
+        <a href="#" class="btn">Button test</a>
+        <a href="#" class="btn btn-pink">Button test</a>
+        
+        <div style="background: black; padding: 20px; margin: 30px 0;">
+          <button class="btn btn-ghost">Button test</button>
+        </div>
+
+        <button class="btn btn-ghost-black">Button test</button>
+
+        <br><br>
+
+        <button class="btn btn-small">Button small</button>
+        <button class="btn">Button default</button>
+        <button class="btn btn-large">Button large</button>
+
+        <br><br>
+
+        <button class="btn btn-pink" disabled>Button test</button>
+
+        <hr>
+
+        <span class="badge">10</span>
+
+        <span class="badge">Text example</span>
+
+        <br><br>
+
+      
+        <hr>
+        
+        <label for="input_test">Label example</label>
+        <input type="text" id="input_test" placeholder="Digite seu e-mail">
+
+        <label for="select_test">Select example</label>
+        <select id="select_test">
+          <option>Option 1</option>
+          <option>Option 2</option>
+          <option>Option 3</option>
+        </select>
+
+        <label for="select_test_button">Select example Button</label>
+        <select class="select-button" id="select_test_button">
+          <option>Option 1</option>
+          <option>Option 2</option>
+          <option>Option 3</option>
+        </select>
+
+        <hr>
+
+
+        <hr>
+
+        <div>
+        
+          <button class="accordion">Test</button>
+
+          <p style="display: none;">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+        </div>
+
+        <div>
+        
+
+          <p style="display: none;">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+        </div>
 
 
       </div>
