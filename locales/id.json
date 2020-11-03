@@ -410,5 +410,16 @@
       "add_to_apple_wallet": "Tambahkan ke Apple Wallet",
       "qr_image_alt": "Kode QR — pindai untuk menukarkan voucher"
     }
+  },
+  "store_availability": {
+    "general": {
+      "view_store_info": "Lihat informasi toko",
+      "check_other_stores": "Periksa ketersediaan di toko lainnya",
+      "pick_up_available": "Pengambilan tersedia",
+      "pick_up_currently_unavailable": "Pengambilan saat ini tersedia",
+      "pick_up_available_at_html": "Dapat diambil di <strong>{{ location_name }}<\/strong>",
+      "pick_up_unavailable_at_html": "Tidak dapat diambil di <strong>{{ location_name }}<\/strong>",
+      "confirm_address": "Hubungi toko untuk mengonfirmasi alamat"
+    }
   }
 }

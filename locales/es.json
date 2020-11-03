@@ -410,5 +410,16 @@
       "add_to_apple_wallet": "Añadir a Apple Wallet",
       "qr_image_alt": "Código QR - escanear para canjear la tarjeta de regalo"
     }
+  },
+  "store_availability": {
+    "general": {
+      "view_store_info": "Ver información de la tienda",
+      "check_other_stores": "Verificar disponibilidad en otras tiendas",
+      "pick_up_available": "Retiro disponible",
+      "pick_up_currently_unavailable": "Retiro no disponible actualmente",
+      "pick_up_available_at_html": "Retiro disponible en <strong>{{ location_name }}<\/strong>",
+      "pick_up_unavailable_at_html": "Retiro no disponible actualmente en <strong>{{ location_name }}<\/strong>",
+      "confirm_address": "Contacta a la tienda para confirmar la dirección"
+    }
   }
 }

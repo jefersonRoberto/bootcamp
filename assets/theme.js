@@ -3060,7 +3060,9 @@ theme.MobileNav = (function() {
   function init() {
     cacheSelectors();
 
-    cache.mobileNavToggle.addEventListener('click', toggleMobileNav);
+    if (cache.mobileNavToggle) {
+      cache.mobileNavToggle.addEventListener('click', toggleMobileNav);
+    }
 
     cache.subNavToggleBtns.forEach(function(element) {
       element.addEventListener('click', toggleSubNav);
@@ -3263,6 +3265,134 @@ theme.MobileNav = (function() {
     unload: unload,
     closeMobileNav: closeMobileNav
   };
+})();
+
+window.Modals = (function() {
+  function Modal(id, name, options) {
+    var defaults = {
+      close: '.js-modal-close',
+      open: '.js-modal-open-' + name,
+      openClass: 'modal--is-active',
+      closeModalOnClick: false
+    };
+
+    this.modal = document.getElementById(id);
+
+    if (!this.modal) return false;
+
+    this.nodes = {
+      parents: [document.querySelector('html'), document.body]
+    };
+
+    this.config = Object.assign(defaults, options);
+
+    this.modalIsOpen = false;
+
+    this.focusOnOpen = this.config.focusOnOpen
+      ? document.getElementById(this.config.focusOnOpen)
+      : this.modal;
+
+    this.openElement = document.querySelector(this.config.open);
+    this.init();
+  }
+
+  Modal.prototype.init = function() {
+    this.openElement.addEventListener('click', this.open.bind(this));
+
+    this.modal
+      .querySelector(this.config.close)
+      .addEventListener('click', this.closeModal.bind(this));
+  };
+
+  Modal.prototype.open = function(evt) {
+    var self = this;
+    // Keep track if modal was opened from a click, or called by another function
+    var externalCall = false;
+
+    if (this.modalIsOpen) return;
+
+    // Prevent following href if link is clicked
+    if (evt) {
+      evt.preventDefault();
+    } else {
+      externalCall = true;
+    }
+
+    // Without this, the modal opens, the click event bubbles up
+    // which closes the modal.
+    if (evt && evt.stopPropagation) {
+      evt.stopPropagation();
+    }
+
+    if (this.modalIsOpen && !externalCall) {
+      this.closeModal();
+    }
+
+    this.modal.classList.add(this.config.openClass);
+
+    this.nodes.parents.forEach(function(node) {
+      node.classList.add(self.config.openClass);
+    });
+
+    this.modalIsOpen = true;
+
+    slate.a11y.trapFocus({
+      container: this.modal,
+      elementToFocus: this.focusOnOpen
+    });
+
+    this.bindEvents();
+  };
+
+  Modal.prototype.closeModal = function() {
+    if (!this.modalIsOpen) return;
+
+    document.activeElement.blur();
+
+    this.modal.classList.remove(this.config.openClass);
+
+    var self = this;
+
+    this.nodes.parents.forEach(function(node) {
+      node.classList.remove(self.config.openClass);
+    });
+
+    this.modalIsOpen = false;
+
+    slate.a11y.removeTrapFocus({
+      container: this.modal
+    });
+
+    this.openElement.focus();
+
+    this.unbindEvents();
+  };
+
+  Modal.prototype.bindEvents = function() {
+    this.keyupHandler = this.keyupHandler.bind(this);
+    this.clickHandler = this.clickHandler.bind(this);
+    document.body.addEventListener('keyup', this.keyupHandler);
+    document.body.addEventListener('click', this.clickHandler);
+  };
+
+  Modal.prototype.unbindEvents = function() {
+    document.body.removeEventListener('keyup', this.keyupHandler);
+    document.body.removeEventListener('click', this.clickHandler);
+  };
+
+  Modal.prototype.keyupHandler = function(event) {
+    if (event.keyCode === 27) {
+      this.closeModal();
+    }
+  };
+
+  Modal.prototype.clickHandler = function(event) {
+    if (this.config.closeModalOnClick && !this.modal.contains(event.target)) {
+      this.closeModal();
+    }
+  };
+
+  return Modal;
 })();
 
 (function() {
@@ -7798,7 +7928,8 @@ theme.Product = (function() {
       salePrice: '[data-sale-price]',
       unitPrice: '[data-unit-price]',
       unitPriceBaseUnit: '[data-unit-price-base-unit]',
-      productPolicies: '[data-product-policies]'
+      productPolicies: '[data-product-policies]',
+      storeAvailabilityContainer: '[data-store-availability-container]'
     };
 
     this.classes = {
@@ -7834,6 +7965,12 @@ theme.Product = (function() {
     this.productPolicies = container.querySelector(
       this.selectors.productPolicies
     );
+    this.storeAvailabilityContainer = container.querySelector(
+      this.selectors.storeAvailabilityContainer
+    );
+    if (this.storeAvailabilityContainer) {
+      this._initStoreAvailability();
+    }
 
     this.loader = this.addToCart.querySelector(this.selectors.loader);
     this.loaderStatus = container.querySelector(this.selectors.loaderStatus);
@@ -7883,6 +8020,29 @@ theme.Product = (function() {
     _stringOverrides: function() {
       theme.productStrings = theme.productStrings || {};
       theme.strings = Object.assign({}, theme.strings, theme.productStrings);
+    },
+
+    _initStoreAvailability: function() {
+      this.storeAvailability = new theme.StoreAvailability(
+        this.storeAvailabilityContainer
+      );
+
+      var storeAvailabilityModalOpenedCallback = function(event) {
+        if (
+          this.cartPopupWrapper &&
+          !this.cartPopupWrapper.classList.contains(
+            this.classes.cartPopupWrapperHidden
+          )
+        ) {
+          this._hideCartPopup(event);
+        }
+      };
+
+      // hide cart popup modal if the store availability modal is also opened
+      this.storeAvailabilityContainer.addEventListener(
+        'storeAvailabilityModalOpened',
+        storeAvailabilityModalOpenedCallback.bind(this)
+      );
     },
 
     _initMobileBreakpoint: function() {
@@ -7935,6 +8095,9 @@ theme.Product = (function() {
       };
 
       this.variants = new slate.Variants(options);
+      if (this.storeAvailability && this.variants.currentVariant.available) {
+        this.storeAvailability.updateContent(this.variants.currentVariant.id);
+      }
 
       this.eventHandlers.updateAvailability = this._updateAvailability.bind(
         this
@@ -8715,12 +8878,27 @@ theme.Product = (function() {
       // remove error message if one is showing
       this._hideErrorMessage();
 
+      // update store availabilities info
+      this._updateStoreAvailabilityContent(evt);
       // update form submit
       this._updateAddToCart(evt);
       // update live region
       this._updateLiveRegion(evt);
 
       this._updatePrice(evt);
+    },
+
+    _updateStoreAvailabilityContent: function(evt) {
+      if (!this.storeAvailability) {
+        return;
+      }
+
+      var variant = evt.detail.variant;
+      if (variant && variant.available) {
+        this.storeAvailability.updateContent(variant.id);
+      } else {
+        this.storeAvailability.clearContent();
+      }
     },
 
     _updateMedia: function(evt) {
@@ -8738,7 +8916,7 @@ theme.Product = (function() {
       var priceContainer = this.container.querySelector(
         this.selectors.priceContainer
       );
-      var regularPrice = priceContainer.querySelector(
+      var regularPrices = priceContainer.querySelectorAll(
         this.selectors.regularPrice
       );
       var salePrice = priceContainer.querySelector(this.selectors.salePrice);
@@ -8746,6 +8924,13 @@ theme.Product = (function() {
       var unitPriceBaseUnit = priceContainer.querySelector(
         this.selectors.unitPriceBaseUnit
       );
+
+      var formatRegularPrice = function(regularPriceElement, price) {
+        regularPriceElement.innerHTML = theme.Currency.formatMoney(
+          price,
+          theme.moneyFormat
+        );
+      };
 
       // Reset product price state
 
@@ -8779,10 +8964,10 @@ theme.Product = (function() {
 
       // On sale
       if (variant.compare_at_price > variant.price) {
-        regularPrice.innerHTML = theme.Currency.formatMoney(
-          variant.compare_at_price,
-          theme.moneyFormat
-        );
+        regularPrices.forEach(function(regularPrice) {
+          formatRegularPrice(regularPrice, variant.compare_at_price);
+        });
+
         salePrice.innerHTML = theme.Currency.formatMoney(
           variant.price,
           theme.moneyFormat
@@ -8790,10 +8975,9 @@ theme.Product = (function() {
         priceContainer.classList.add(this.classes.productOnSale);
       } else {
         // Regular price
-        regularPrice.innerHTML = theme.Currency.formatMoney(
-          variant.price,
-          theme.moneyFormat
-        );
+        regularPrices.forEach(function(regularPrice) {
+          formatRegularPrice(regularPrice, variant.price);
+        });
       }
 
       // Unit price
@@ -9082,6 +9266,124 @@ theme.SlideshowSection.prototype = Object.assign(
   }
 );
 
+window.theme = window.theme || {};
+
+theme.StoreAvailability = (function() {
+  var selectors = {
+    storeAvailabilityModalOpen: '[data-store-availability-modal-open]',
+    storeAvailabilityModalProductTitle:
+      '[data-store-availability-modal-product-title]',
+    storeAvailabilityModalVariantTitle:
+      '[data-store-availability-modal-variant-title]'
+  };
+
+  var classes = {
+    hidden: 'hide'
+  };
+
+  function StoreAvailability(container) {
+    this.container = container;
+    this.productTitle = this.container.dataset.productTitle;
+    this.hasOnlyDefaultVariant =
+      this.container.dataset.hasOnlyDefaultVariant === 'true';
+  }
+
+  StoreAvailability.prototype = Object.assign({}, StoreAvailability.prototype, {
+    updateContent: function(variantId) {
+      var variantSectionUrl =
+        this.container.dataset.baseUrl +
+        '/variants/' +
+        variantId +
+        '/?section_id=store-availability';
+      var self = this;
+
+      var storeAvailabilityModalOpen = self.container.querySelector(
+        selectors.storeAvailabilityModalOpen
+      );
+
+      this.container.style.opacity = 0.5;
+      if (storeAvailabilityModalOpen) {
+        storeAvailabilityModalOpen.disabled = true;
+        storeAvailabilityModalOpen.setAttribute('aria-busy', true);
+      }
+
+      fetch(variantSectionUrl)
+        .then(function(response) {
+          return response.text();
+        })
+        .then(function(storeAvailabilityHTML) {
+          if (storeAvailabilityHTML.trim() === '') {
+            return;
+          }
+          self.container.innerHTML = storeAvailabilityHTML;
+          self.container.innerHTML = self.container.firstElementChild.innerHTML;
+          self.container.style.opacity = 1;
+
+          // Need to query this again because we updated the DOM
+          storeAvailabilityModalOpen = self.container.querySelector(
+            selectors.storeAvailabilityModalOpen
+          );
+
+          if (!storeAvailabilityModalOpen) {
+            return;
+          }
+
+          storeAvailabilityModalOpen.addEventListener(
+            'click',
+            self._onClickModalOpen.bind(self)
+          );
+
+          self.modal = self._initModal();
+          self._updateProductTitle();
+          if (self.hasOnlyDefaultVariant) {
+            self._hideVariantTitle();
+          }
+        });
+    },
+
+    clearContent: function() {
+      this.container.innerHTML = '';
+    },
+
+    _onClickModalOpen: function() {
+      this.container.dispatchEvent(
+        new CustomEvent('storeAvailabilityModalOpened', {
+          bubbles: true,
+          cancelable: true
+        })
+      );
+    },
+
+    _initModal: function() {
+      return new window.Modals(
+        'StoreAvailabilityModal',
+        'store-availability-modal',
+        {
+          close: '.js-modal-close-store-availability-modal',
+          closeModalOnClick: true,
+          openClass: 'store-availabilities-modal--active'
+        }
+      );
+    },
+
+    _updateProductTitle: function() {
+      var storeAvailabilityModalProductTitle = this.container.querySelector(
+        selectors.storeAvailabilityModalProductTitle
+      );
+      storeAvailabilityModalProductTitle.textContent = this.productTitle;
+    },
+
+    _hideVariantTitle: function() {
+      var storeAvailabilityModalVariantTitle = this.container.querySelector(
+        selectors.storeAvailabilityModalVariantTitle
+      );
+      storeAvailabilityModalVariantTitle.classList.add(classes.hidden);
+    }
+  });
+
+  return StoreAvailability;
+})();
+
 theme.VideoSection = (function() {
   function VideoSection(container) {
     container.querySelectorAll('.video').forEach(function(el) {
@@ -9172,6 +9474,7 @@ document.addEventListener('DOMContentLoaded', function() {
   sections.register('header-section', theme.HeaderSection);
   sections.register('map', theme.Maps);
   sections.register('slideshow-section', theme.SlideshowSection);
+  sections.register('store-availability', theme.StoreAvailability);
   sections.register('video-section', theme.VideoSection);
   sections.register('quotes', theme.Quotes);
   sections.register('hero-section', theme.HeroSection);

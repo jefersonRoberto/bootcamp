@@ -364,7 +364,7 @@
     },
     "customer": {
       "account": "账户",
-      "log_out": "退出",
+      "log_out": "登出",
       "log_in": "登录",
       "create_account": "创建账户"
     },
@@ -409,6 +409,17 @@
       "remaining_html": "剩余 {{ balance }}",
       "add_to_apple_wallet": "添加到 Apple Wallet",
       "qr_image_alt": "二维码 - 扫描兑换礼品卡"
+    }
+  },
+  "store_availability": {
+    "general": {
+      "view_store_info": "查看商店信息",
+      "check_other_stores": "查看其他商店的可用服务",
+      "pick_up_available": "提供取货服务",
+      "pick_up_currently_unavailable": "目前无法提供取货服务",
+      "pick_up_available_at_html": "<strong>{{ location_name }}<\/strong> 提供取货服务",
+      "pick_up_unavailable_at_html": "<strong>{{ location_name }}<\/strong> 目前无法提供取货服务",
+      "confirm_address": "联系商店以确认地址"
     }
   }
 }

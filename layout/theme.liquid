@@ -67,7 +67,10 @@
       performance.mark('debut:theme_stylesheet_loaded.end');
       performance.measure('debut:theme_stylesheet_loaded', 'debut:theme_stylesheet_loaded.start', 'debut:theme_stylesheet_loaded.end');
 
-      var url = "{{ 'theme.css' | asset_url }}";
+     var url = "{{ 'theme.css' | asset_url }}";
+     var url = "{{ 'styles.scss' | asset_url }}";
+
+  
       var link = document.querySelector('link[href="' + url + '"]');
       link.loaded = true;
       link.dispatchEvent(new Event('load'));
@@ -75,7 +78,7 @@
   </script>
 
   <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}" type="text/css" media="print" onload="this.media='all';onLoadStylesheet()">
-  <link rel="stylesheet" href="{{ 'styles.css' | asset_url }}" type="text/css" media="print" onload="this.media='all';onLoadStylesheet()">
+  <link rel="stylesheet" href="{{ 'styles.scss' | asset_url }}" type="text/css" media="print" onload="this.media='all';onLoadStylesheet()">
 
   <style>
     {{ header_font | font_face: font_display: 'swap' }}
@@ -140,7 +143,9 @@
         predictiveSearchShowVendor: {{ settings.predictive_search_show_vendor | json }}
       },
       stylesheet: "{{ 'theme.css' | asset_url }}"
-
+      stylesheet: "{{ 'styles.css' | asset_url }}"
+      
+      
     }
 
     document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
